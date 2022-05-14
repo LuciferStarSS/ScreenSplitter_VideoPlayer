@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 
 $vcount=4;						//视频总数
 $vname=Array("吴老师","学生一","学生二","学生三");	//对应的视频用户
 $vfile=Array("./data1/1.mp4","./data1/2.mp4","./data1/3.mp4","./data1/4.mp4");		//对应的视频文件
-
+$stfile="./data1/subtitle.txt";
 $video_height=642;					//视频高
 $video_width=1024;					//视频宽
 
@@ -161,7 +161,7 @@ function onTrackedVideoFrame(currentTime, duration){
    }
 
 <?php
-$subtitle=@file_get_contents("./subtitle.txt");
+$subtitle=@file_get_contents($stfile);
 if($subtitle!="")
 {
    $subArrs=explode("\r\n",trim($subtitle,"\r\n"));
