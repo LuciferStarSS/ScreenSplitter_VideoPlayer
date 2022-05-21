@@ -195,11 +195,14 @@ if($subtitle!="")
       muteall();
 <?php
 //增加语音播放指示
-      $u=array_search($subdataArr[1],$vname);
+      $u=array_search(trim($subdataArr[1]),$vname);//如果在某人说话时，不切屏，则在字幕文件中说话人的字段后面，添加一个空格。
       if($u!==false)
       {
-         echo "      p".$u.".style.display=\"inline\";\r\n";
-         echo "      if(speaker!=p".$u."){ speaker=p".$u."; setme(v".$u.");}\r\n";
+         echo "      p".$u.".style.display=\"inline\";\r\n";	//说话指示器需要一直有
+         if($subdataArr[1]==trim($subdataArr[1]))		//切屏则不一定
+         {
+            echo "      if(speaker!=p".$u."){ speaker=p".$u."; setme(v".$u.");}\r\n";
+         }
       }
          if($i==$sc-1)//结尾淡出效果
          {
