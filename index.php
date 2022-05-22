@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $f="./data1/";
 
 include($f."data.inc.php");
@@ -171,7 +171,7 @@ for($i=1;$i<$vcount;$i++)//分屏视频开始的时间点
       v".$i."_play=true;
       v".$i.".play();
    }
-   ";
+";
 }
 ?>
 <?php
@@ -191,15 +191,20 @@ if($subtitle!="")
 ?>
    else   if(currentTime > <?php echo $subdataArr[0];?> && currentTime < <?php echo ($subdataArr[0]+0.3);?>)
    {
-      comments.innerHTML="<?php echo "[".trim($subdataArr[1])."]".$subdataArr[2];?>";
+<?php
+      if($subdataArr[1]=="操作")
+         echo "      comments.innerHTML=\"".$subdataArr[2]."\";\r\n";
+      else
+         echo "      comments.innerHTML=\"[".trim($subdataArr[1],"x")."]".$subdataArr[2]."\";\r\n";
+?>
       muteall();
 <?php
 //增加语音播放指示
-      $u=array_search(trim($subdataArr[1]),$vname);//如果在某人说话时，不切屏，则在字幕文件中说话人的字段后面，添加一个空格。
+      $u=array_search(trim($subdataArr[1],"x"),$vname);//如果在某人说话时，不切屏，则在字幕文件中说话人的字段后面，添加一个空格。
       if($u!==false)
       {
          echo "      p".$u.".style.display=\"inline\";\r\n";	//说话指示器需要一直有
-         if($subdataArr[1]==trim($subdataArr[1]))		//切屏则不一定
+         if($subdataArr[1]==trim($subdataArr[1],"x"))		//切屏则不一定
          {
             echo "      if(speaker!=p".$u."){ speaker=p".$u."; setme(v".$u.");}\r\n";
          }
