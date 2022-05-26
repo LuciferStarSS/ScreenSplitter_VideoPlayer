@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $f="./data1/";
 
 include($f."data.inc.php");
@@ -12,19 +12,57 @@ $mainframe_width=($video_width+6)+($video_s_width+6);
 <head><meta http-equiv="content-type" content="text/html;charset=UTF-8">
   <title>分屏播放</title>
   <script type="text/javascript" src="./js/jquery.js"></script>
+<style>
+
+input[type=range] {/*input外壳样式*/
+    -webkit-appearance: none;
+    border-radius: 10px;
+    height: 5px;
+    z-index: 10;
+}
+
+input[type=range]::-webkit-slider-runnable-track {/*轨道*/
+    height: 5px;
+    background: rgba(0,255,0,0.2);
+    border-radius: 10px;
+}
+
+input[type=range]::-webkit-slider-thumb {/*滑块*/
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    margin-top: -3px; 
+    background: #0f0; 
+    border-radius: 50%; 
+}
+</style>
 </head>
 <body>﻿
 <input type=button onclick="set();" value="set">
 <input type=button onclick="go();" value="go">
 <input type=button onclick="pause();" value="pause">
 <input type=button onclick="play();" value="play">
-<div> <a id="duration">0:00</a> ( <a id="current">0:00</a> ) </div>
+<?php
+if(isset($afile)&& $afile!="")
+{
+?>
+<audio controls  id=a style="height: 20px; position: absolute;">
+  <source src="<?php echo $afile;?>" type="audio/mp3" >
+您的浏览器不支持 audio 元素。
+</audio>
+<?php
+}
+?>
+<div> Video:<a id="duration">0:00</a> ( <a id="current">0:00</a> ) Audio: <a id="durationa">0:00</a> ( <a id="currenta">0:00</a> ) </div>
 <p>
 <div  style="position: absolute; font-size: 28px;width: <?php echo $mainframe_width;?>px;height: <?php echo ($video_height+6);?>px;text-align: center;background-image:url('./data1/bg.png');margin: auto; right: 0;left: 0; ">
   <div style="width:<?php echo $mainframe_width;?>px;height: <?php echo ($video_height+6);?>px;position:relative;" align=left >
 <script>
 var currentMainDiv=null;
 var currentMainVideo=null;
+var a=null;
+var progress=null;
+var posimg=null;
 <?php
 
 for($i=0;$i<$vcount;$i++)			//初始化视频和DIV的句柄
@@ -50,6 +88,14 @@ for($i=0;$i<$vcount;$i++)
 //全体暂停
 function pause()
 {
+<?php
+if(isset($afile)&& $afile!="")
+{
+?>
+   a.pause();
+<?php
+}
+?>
 <?php 
 for($i=0;$i<$vcount;$i++)
 {
@@ -61,6 +107,14 @@ for($i=0;$i<$vcount;$i++)
 //全体播放
 function play()
 {
+<?php
+if(isset($afile)&& $afile!="")
+{
+?>
+   a.play();
+<?php
+}
+?>
 <?php 
 for($i=0;$i<$vcount;$i++)
 {
@@ -75,6 +129,17 @@ var posArr=Array();		//视频坐标
 var comments=null;		//字幕
 function set()
 {
+   progress=document.getElementById("progress");
+   progress.style.visibility="visible";
+
+<?php
+if(isset($afile)&& $afile!="")
+{
+?>
+   a=document.getElementById("a");
+<?php
+}
+?>
 <?php 
 for($i=0;$i<$vcount;$i++)		//遍历所有视频
 {
@@ -109,7 +174,7 @@ for($i=0;$i<$vcount;$i++)		//遍历所有视频
 ?>
    currentMainDiv=d0;						//默认第一个视频在主屏位置
    comments=document.getElementById("comments");
-   comments.innerHTML="本视频演示平台中的小组分享功能。";	//初始化字幕
+   comments.innerHTML="";	//初始化字幕
 }
 
 //响应视频点击切换主副屏操作
@@ -147,9 +212,24 @@ function setme(obj)
 //开始播放，从主视频开始
 function go()
 {
-   v0.play();
+<?php
+if(isset($afile)&& $afile!="")
+{
+?>
+   a.play();
+   a.ontimeupdate= function(event){onTrackedAudioFrame(this.currentTime, this.duration);};
+<?php
+}
+?>   v0.play();
    v0.ontimeupdate= function(event){onTrackedVideoFrame(this.currentTime, this.duration);};
 }
+
+function onTrackedAudioFrame(currentTime, duration){
+
+   $("#currenta").text(currentTime);
+   $("#durationa").text(duration);
+}
+
 
 <?php 
 for($i=1;$i<$vcount;$i++)
@@ -160,9 +240,33 @@ for($i=1;$i<$vcount;$i++)
 //分视频和字幕的控制
 var speaker=null;
 function onTrackedVideoFrame(currentTime, duration){
-
-<?php 
+   progress.value=currentTime*100/duration;
+   if(Math.floor(currentTime)%10==1)		//定时同步时序，防止在录屏时出现多个视频时序不同步的现象。
+   {
+<?php
 for($i=1;$i<$vcount;$i++)//分屏视频开始的时间点
+{
+   echo "      v".$i.".currentTime=currentTime;\r\n";
+}
+?>
+   }
+
+   if(v1_play==false)
+   {
+      v1_play=true;
+<?php
+for($i=1;$i<$vcount;$i++)		//分屏视频一起开始
+{
+   echo "      v".$i.".play();\r\n";
+}
+?>
+      //v1.play();
+      //v2.play();
+      //v3.play();
+   }
+<?php
+/* 
+for($i=1;$i<$vcount;$i++)		//分屏视频按配置数据分别开始
 {
    if($i>1) echo "   else";
 
@@ -173,6 +277,7 @@ for($i=1;$i<$vcount;$i++)//分屏视频开始的时间点
    }
 ";
 }
+*/
 ?>
 <?php
 $subtitle=@file_get_contents($stfile);//字幕加载控制
@@ -228,6 +333,20 @@ if($subtitle!="")
    $("#current").text(currentTime);
    $("#duration").text(duration);
 }
+
+function setCurrentTime(event)
+{
+   //alert(progress.value);
+<?php
+
+for($i=0;$i<$vcount;$i++)			//初始化视频和DIV的句柄
+{
+   echo "v".$i.".currentTime=v0.duration*progress.value/100;\r\n";			//DIV
+}
+?>
+ 
+
+}
 </script>
 <?php
 for($i=0;$i<$vcount;$i++)
@@ -243,7 +362,13 @@ for($i=0;$i<$vcount;$i++)
 <?php
 }
 ?>
-    <div id=comments style="position: absolute;  font-size: 28px; left:7px; top:<?php echo floor($video_height-$video_height%100);?>px;    width: <?php echo ($mainframe_width-14);?>px;    height: 40px;    background: whitesmoke;  z-index:99999;   text-align: center;    opacity: 80%;"></div>
+    <div id=commentsshadow style="position: absolute;  font-size: 28px; left:14px; top:<?php echo floor($video_height-$video_height%100-3);?>px;    width: <?php echo ($mainframe_width-28);?>px;    height: 40px;    background: floralwhite;  z-index:99999;     opacity: 50%; "></div>
+    <div id=comments style="position: absolute;  font-size: 28px; left:14px; top:<?php echo floor($video_height-$video_height%100);?>px;    width: <?php echo ($mainframe_width-28);?>px;    height: 40px;     z-index:99999;   text-align: center; font-family: cursive;"></div>
+
+    <div id=progressbar style="position: absolute; left:14px; top:<?php echo floor($video_height-$video_height%100+30);?>px;    width: <?php echo ($mainframe_width-28);?>px;    height: 6px;  z-index:999990;">
+      <input id=progress type="range" name="points" min="0" max="100" style="visibility:hidden;position: absolute; background:gray;  left:-2px; top:0px;    width: 100%;    height: 5px;     z-index:99999;   " value=0  step=0.5 onchange="setCurrentTime(event);"/>
+    </div>
+
   </div>
 </div>
 </body>
